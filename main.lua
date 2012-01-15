@@ -13,8 +13,8 @@ local links = setmetatable({ }, {
   end
 })
 
-local function alert(interrupt, target, spell, time)
-  local message = string.format("%sed %s's %s (%2.2fs into cast)", interrupt, target, spell, time)
+local function alert(target, spell, time)
+  local message = string.format("Interrupted %s's %s (%2.2fs into cast)", target, spell, time)
   local facet = GetRealNumPartyMembers() > 0 and 'PARTY' or 'SAY'
   SendChatMessage(message, facet)
   return true
@@ -37,7 +37,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(time, kind, hideCaster,
   elseif kind == 'SPELL_CAST_SUCCESS' or kind == 'SPELL_CAST_FAILED' then
     casts[srcGUID] = nil
   elseif kind == 'SPELL_INTERRUPT' and srcGUID == me then
-    alert(links[spellID], dstName, links[extraSpellID], time - casts[dstGUID])
+    alert(dstName, links[extraSpellID], time - casts[dstGUID])
   end
 
   return true
