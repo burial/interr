@@ -5,8 +5,6 @@ mod:RegisterEvent('PLAYER_ENTERING_WORLD')
 local me -- player guid
 local casts = { }
 
-_G.me, _G.casts = me, casts
-
 local links = setmetatable({ }, {
   __index = function(self, index)
     local value = GetSpellLink(index)
