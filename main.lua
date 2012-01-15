@@ -14,7 +14,7 @@ local links = setmetatable({ }, {
 })
 
 local function alert(...)
-  local message = string.format("%sed %s's %s (%s) %2.2fs into cast", ...)
+  local message = string.format("%sed %s's %s (%2.2fs into cast)", ...)
   local facet = GetNumPartyMembers() > 0 and 'PARTY' or 'SAY'
   SendChatMessage(message, facet)
   return true
@@ -27,21 +27,18 @@ function mod:PLAYER_ENTERING_WORLD()
   return true
 end
 
-do
-  local schools = { 'Physical', 'Holy', 'Fire', 'Nature', 'Frost', 'Shadow', 'Arcane'}
-  function mod:COMBAT_LOG_EVENT_UNFILTERED(time, kind, hideCaster,
-                                           srcGUID, srcName, srcFlags, srcRaidFlags,
-                                           dstGUID, dstName, dstFlags, dstRaidFlags,
-                                           spellID, spellName, spellSchool,
-                                           extraSpellID, extraSpellName, extraSpellSchool)
-    if kind == 'SPELL_CAST_START' then
-      casts[srcGUID] = time
-    elseif kind == 'SPELL_CAST_SUCCESS' or kind == 'SPELL_CAST_FAILED' then
-      casts[srcGUID] = nil
-    elseif kind == 'SPELL_INTERRUPT' and srcGUID == me then
-      alert(links[spellID], dstName, links[extraSpellID], schools[extraSpellSchool], time - casts[dstGUID])
-    end
-
-    return true
+function mod:COMBAT_LOG_EVENT_UNFILTERED(time, kind, hideCaster,
+                                         srcGUID, srcName, srcFlags, srcRaidFlags,
+                                         dstGUID, dstName, dstFlags, dstRaidFlags,
+                                         spellID, spellName, spellSchool,
+                                         extraSpellID, extraSpellName)
+  if kind == 'SPELL_CAST_START' then
+    casts[srcGUID] = time
+  elseif kind == 'SPELL_CAST_SUCCESS' or kind == 'SPELL_CAST_FAILED' then
+    casts[srcGUID] = nil
+  elseif kind == 'SPELL_INTERRUPT' and srcGUID == me then
+    alert(links[spellID], dstName, links[extraSpellID], time - casts[dstGUID])
   end
+
+  return true
 end
