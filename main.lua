@@ -5,6 +5,8 @@ mod:RegisterEvent('PLAYER_ENTERING_WORLD')
 local me -- player guid
 local casts = { }
 
+_G.me, _G.casts = me, casts
+
 local links = setmetatable({ }, {
   __index = function(self, index)
     local value = GetSpellLink(index)
@@ -13,9 +15,9 @@ local links = setmetatable({ }, {
   end
 })
 
-local function alert(...)
-  local message = string.format("%sed %s's %s (%2.2fs into cast)", ...)
-  local facet = GetNumPartyMembers() > 0 and 'PARTY' or 'SAY'
+local function alert(interrupt, target, spell, time)
+  local message = string.format("%sed %s's %s (%2.2fs into cast)", interrupt, target, spell, time)
+  local facet = GetRealNumPartyMembers() > 0 and 'PARTY' or 'SAY'
   SendChatMessage(message, facet)
   return true
 end
@@ -31,7 +33,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(time, kind, hideCaster,
                                          srcGUID, srcName, srcFlags, srcRaidFlags,
                                          dstGUID, dstName, dstFlags, dstRaidFlags,
                                          spellID, spellName, spellSchool,
-                                         extraSpellID, extraSpellName)
+                                         extraSpellID)
   if kind == 'SPELL_CAST_START' then
     casts[srcGUID] = time
   elseif kind == 'SPELL_CAST_SUCCESS' or kind == 'SPELL_CAST_FAILED' then
