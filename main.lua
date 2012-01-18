@@ -14,16 +14,13 @@ local links = setmetatable({ }, {
 })
 
 local function alert(target, spell, time)
-  local message = string.format("Interrupted %s's %s (%2.2fs into cast)", target, spell, time)
-  local facet = GetRealNumRaidMembers() > 0 and 'RAID' or GetRealNumPartyMembers() > 0 and 'PARTY' or 'SAY'
-  SendChatMessage(message, facet)
   return true
 end
 
 function mod:PLAYER_ENTERING_WORLD()
   self:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
-  me = UnitGUID('player')
   self.PLAYER_ENTERING_WORLD = function() wipe(casts) end
+  me = UnitGUID('player')
   return true
 end
 
@@ -37,7 +34,11 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(time, kind, hideCaster,
   elseif kind == 'SPELL_CAST_SUCCESS' or kind == 'SPELL_CAST_FAILED' then
     casts[srcGUID] = nil
   elseif kind == 'SPELL_INTERRUPT' and srcGUID == me then
-    alert(dstName, links[extraSpellID], time - casts[dstGUID])
+    local message = casts[dstGUID] and
+      string.format("Interrupted %s's %s (%2.2fs into cast)", dstName, links[extraSpellID], time - casts[dstGUID]) or
+      string.format("Interrupetd %s's %s", dstName, links[extraSpellID])
+
+    SendChatMessage(message, GetRealNumRaidMembers() > 0 and 'RAID' or GetRealNumPartyMembers() > 0 and 'PARTY' or 'SAY')
   end
 
   return true
