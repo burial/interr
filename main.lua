@@ -15,7 +15,7 @@ local links = setmetatable({ }, {
 
 local function alert(target, spell, time)
   local message = string.format("Interrupted %s's %s (%2.2fs into cast)", target, spell, time)
-  local facet = GetRealNumPartyMembers() > 0 and 'PARTY' or 'SAY'
+  local facet = GetRealNumRaidMembers() > 0 and 'RAID' or GetRealNumPartyMembers() > 0 and 'PARTY' or 'SAY'
   SendChatMessage(message, facet)
   return true
 end
